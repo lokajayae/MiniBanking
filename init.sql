@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS transactions (
     description TEXT,
     created_at TIMESTAMP NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS fraud_alerts (
+    id VARCHAR(36) PRIMARY KEY,
+    transaction_id VARCHAR(36) NOT NULL,
+    account_number VARCHAR(50) NOT NULL,
+    amount NUMERIC(19,2) NOT NULL,
+    reason VARCHAR(255) NOT NULL,
+    related_transaction_ids TEXT,
+    detected_at TIMESTAMP NOT NULL
+);
