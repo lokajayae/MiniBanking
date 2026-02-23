@@ -12,3 +12,9 @@ spring:
     show-sql: true
   application:
     name: account-service
+  
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
