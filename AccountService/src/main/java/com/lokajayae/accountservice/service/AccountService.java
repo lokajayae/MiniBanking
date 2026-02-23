@@ -43,7 +43,7 @@ public class AccountService {
     }
 
     private String generateAccountNumber() {
-        return "ACC" + System.currentTimeMillis();
+        return String.format("%09d", System.currentTimeMillis());
     }
 
     private AccountResponse mapToResponse(Account account) {
@@ -54,5 +54,12 @@ public class AccountService {
                 .balance(account.getBalance())
                 .createdAt(account.getCreatedAt())
                 .build();
+    }
+
+    public AccountResponse updateBalance(String accountNumber, BigDecimal newBalance) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new RuntimeException("Account not found"));
+        account.setBalance(newBalance);
+        return mapToResponse(accountRepository.save(account));
     }
 }

@@ -37,4 +37,11 @@ public class AccountController {
             @RequestParam BigDecimal minBalance) {
         return ResponseEntity.ok(accountService.getAccountsWithMinBalance(minBalance));
     }
+
+    @PutMapping("/{accountNumber}/balance")
+    public ResponseEntity<AccountResponse> updateBalance(
+            @PathVariable String accountNumber,
+            @RequestBody BigDecimal newBalance) {
+        return ResponseEntity.ok(accountService.updateBalance(accountNumber, newBalance));
+    }
 }
