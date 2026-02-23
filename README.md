@@ -5,6 +5,7 @@ A mini banking system built with microservices architecture, demonstrating core 
 <br>
 
 ## 📋 Architecture
+![Architecture](docs/architecture.png)
 
 <br>
 
@@ -114,3 +115,36 @@ docker compose down -v
 |------|-----------|
 | Large Transaction | Amount exceeds 10,000,000 |
 | Frequent Transactions | More than 3 transactions from same account within 5 minutes |
+
+<br>
+
+## 📨 Kafka Event Flow
+```
+transaction-service
+    │
+    │ publishes [transaction.created]
+    ▼
+  Kafka
+    │
+    │ consumes [transaction.created]
+    ▼
+fraud-service
+    │
+    ├── Rule 1: Large amount check
+    └── Rule 2: Frequent transaction check
+              │
+              ▼
+        Save fraud alert to DB
+```
+
+<br>
+
+## 🔮 Future Improvements
+
+- **Account Blocking** — automatically block accounts when fraud is detected, blocked accounts cannot perform transactions
+- **Authentication & Authorization** — JWT-based authentication, role-based access control (admin, customer)
+- **Data Encryption** — encrypt sensitive data at rest (account numbers, balances) and in transit (HTTPS/TLS), critical for banking compliance
+- **Redis Idempotency** — prevent duplicate transactions using idempotency keys with Redis TTL
+- **Notification Service** — real-time alerts via email/SMS when fraud is detected
+- **Audit Trail** — immutable log of all actions for regulatory compliance
+- **API Gateway** - Client not interact with each service directly, but with API Gateway
