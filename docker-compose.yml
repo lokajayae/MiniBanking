@@ -30,6 +30,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  
+  transaction-service:
+    build:
+      context: ./TransactionService
+    container_name: transaction-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/minibanking
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      ACCOUNT_SERVICE_URL: http://account-service:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      account-service:
+        condition: service_started
 
 volumes:
   postgres_data:
