@@ -12,6 +12,7 @@ A mini banking system built with microservices architecture, demonstrating core 
 - **Java 17**
 - **Spring Boot 3.2**
 - **PostgreSQL 14**
+- **Apache Kafka**
 - **Docker & Docker Compose**
 - **Maven 3.9.4**
 
@@ -23,7 +24,10 @@ A mini banking system built with microservices architecture, demonstrating core 
 Manages bank accounts — create, retrieve, and update balances.
 
 ### transaction-service (port 8082)
-Handles all financial transactions — deposit, withdrawal, and transfer between accounts. Communicates with account-service via REST.
+Handles all financial transactions — deposit, withdrawal, and transfer between accounts. Communicates with account-service via REST. Publishes transaction events to Kafka.
+
+### fraud-service (port 8083)
+Consumes transaction events from Kafka and analyzes them for suspicious activity. Detects large transactions and frequent transaction bursts.
 
 <br>
 
@@ -56,8 +60,10 @@ docker compose up --build
 **3. Services will be available at:**
 - Account Service: `http://localhost:8081`
 - Transaction Service: `http://localhost:8082`
+- Fraud Service: `http://localhost:8083`
 - Account Service Swagger: `http://localhost:8081/swagger-ui/index.html`
 - Transaction Service Swagger: `http://localhost:8082/swagger-ui/index.html`
+- Fraud Service Swagger: `http://localhost:8083/swagger-ui/index.html`
 
 **To stop:**
 ```bash
@@ -89,5 +95,22 @@ docker compose down -v
 | POST | `/api/transactions/deposit` | Deposit to account |
 | POST | `/api/transactions/withdraw` | Withdraw from account |
 | POST | `/api/transactions/transfer` | Transfer between accounts |
+| GET | `/api/transactions/{id}` | Get transaction by ID |
 | GET | `/api/transactions/history/{accountNumber}` | Get transaction history |
 | GET | `/api/transactions/large?minAmount={amount}` | Get large transactions |
+
+### Fraud Service
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/fraud-alerts` | Get all fraud alerts |
+| GET | `/api/fraud-alerts/{accountNumber}` | Get fraud alerts by account |
+
+<br>
+
+## 🔍 Fraud Detection Rules
+
+| Rule | Condition |
+|------|-----------|
+| Large Transaction | Amount exceeds 10,000,000 |
+| Frequent Transactions | More than 3 transactions from same account within 5 minutes |
