@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS accounts (
+    id VARCHAR(36) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    account_number VARCHAR(50) NOT NULL UNIQUE,
+    balance NUMERIC(19,2) NOT NULL,
+    created_at TIMESTAMP NOT NULL
+);
