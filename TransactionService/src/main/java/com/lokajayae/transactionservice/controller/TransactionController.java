@@ -20,6 +20,13 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<TransactionResponse>> getTransactionById(
+            @PathVariable String id) {
+        return ResponseEntity.ok(ApiResponse.success(
+                transactionService.getTransactionById(id), "Success Get Transaction Information"));
+    }
+
     @PostMapping("/deposit")
     public ResponseEntity<ApiResponse<TransactionResponse>> deposit(
             @RequestBody @Valid TransactionRequest request) {

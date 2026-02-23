@@ -53,7 +53,7 @@ class TransactionServiceTest {
                 .fromAccountNumber("ACC_FROM")
                 .toAccountNumber("ACC_TO")
                 .amount(new BigDecimal("200000"))
-                .type(TransactionType.TRANSFER)
+                .type(TransactionType.TRANSFER_OUT)
                 .status(TransactionStatus.SUCCESS)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -150,7 +150,7 @@ class TransactionServiceTest {
         TransactionResponse response = transactionService.transfer(request);
 
         assertNotNull(response);
-        assertEquals(TransactionType.TRANSFER, response.getType());
+        assertEquals(TransactionType.TRANSFER_OUT, response.getType());
         assertEquals(TransactionStatus.SUCCESS, response.getStatus());
         verify(accountClient).updateBalance("ACC_FROM", new BigDecimal("800000"));
         verify(accountClient).updateBalance("ACC_TO", new BigDecimal("700000"));

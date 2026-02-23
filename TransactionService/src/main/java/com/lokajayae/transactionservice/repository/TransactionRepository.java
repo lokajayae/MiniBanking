@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, String> {
@@ -34,4 +35,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
         ORDER BY amount DESC
         """, nativeQuery = true)
     List<Transaction> findLargeTransactions(@Param("minAmount") BigDecimal minAmount);
+
+    @Query(value = """
+    SELECT * FROM transactions
+    WHERE id = :id
+    """, nativeQuery = true)
+    Optional<Transaction> findTransactionById(@Param("id") String id);
 }

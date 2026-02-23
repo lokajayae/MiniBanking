@@ -8,6 +8,9 @@ import com.lokajayae.transactionservice.model.Transaction;
 import com.lokajayae.transactionservice.model.TransactionStatus;
 import com.lokajayae.transactionservice.model.TransactionType;
 import com.lokajayae.transactionservice.repository.TransactionRepository;
+import com.lokajayae.transactionservice.producer.TransactionProducer;
+import com.lokajayae.transactionservice.event.TransactionEvent;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final AccountClient accountClient;
+    private final TransactionProducer transactionProducer;
 
     public TransactionResponse deposit(TransactionRequest request) {
         AccountResponse account = accountClient.getAccount(request.getToAccountNumber());
@@ -37,7 +41,10 @@ public class TransactionService {
                 .description(request.getDescription())
                 .build();
 
-        return mapToResponse(transactionRepository.save(transaction));
+        Transaction saved = transactionRepository.save(transaction);
+        publishEvent(saved);
+
+        return mapToResponse(saved);
     }
 
     public TransactionResponse withdraw(TransactionRequest request) {
@@ -58,7 +65,10 @@ public class TransactionService {
                 .description(request.getDescription())
                 .build();
 
-        return mapToResponse(transactionRepository.save(transaction));
+        Transaction saved = transactionRepository.save(transaction);
+        publishEvent(saved);
+
+        return mapToResponse(saved);
     }
 
     public TransactionResponse transfer(TransactionRequest request) {
@@ -74,16 +84,29 @@ public class TransactionService {
         accountClient.updateBalance(request.getToAccountNumber(),
                 toAccount.getBalance().add(request.getAmount()));
 
-        Transaction transaction = Transaction.builder()
+        Transaction outTransaction = Transaction.builder()
                 .fromAccountNumber(request.getFromAccountNumber())
                 .toAccountNumber(request.getToAccountNumber())
                 .amount(request.getAmount())
-                .type(TransactionType.TRANSFER)
+                .type(TransactionType.TRANSFER_OUT)
                 .status(TransactionStatus.SUCCESS)
                 .description(request.getDescription())
                 .build();
 
-        return mapToResponse(transactionRepository.save(transaction));
+        Transaction inTransaction = Transaction.builder()
+                .fromAccountNumber(request.getFromAccountNumber())
+                .toAccountNumber(request.getToAccountNumber())
+                .amount(request.getAmount())
+                .type(TransactionType.TRANSFER_IN)
+                .status(TransactionStatus.SUCCESS)
+                .description(request.getDescription())
+                .build();
+
+        Transaction savedOut = transactionRepository.save(outTransaction);
+        transactionRepository.save(inTransaction);
+        publishEvent(savedOut);
+
+        return mapToResponse(savedOut);
     }
 
     public List<TransactionResponse> getTransactionHistory(String accountNumber) {
@@ -113,5 +136,22 @@ public class TransactionService {
                 .description(transaction.getDescription())
                 .createdAt(transaction.getCreatedAt())
                 .build();
+    }
+
+    public TransactionResponse getTransactionById(String id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+        return mapToResponse(transaction);
+    }
+
+    private void publishEvent(Transaction transaction) {
+        transactionProducer.publishTransaction(TransactionEvent.builder()
+                .transactionId(transaction.getId())
+                .fromAccountNumber(transaction.getFromAccountNumber())
+                .toAccountNumber(transaction.getToAccountNumber())
+                .amount(transaction.getAmount())
+                .type(transaction.getType().name())
+                .createdAt(transaction.getCreatedAt())
+                .build());
     }
 }
